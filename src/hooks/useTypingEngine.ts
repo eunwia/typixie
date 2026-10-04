@@ -64,7 +64,7 @@ export function useTypingEngine(initialDuration: TestDuration = 30) {
   syncRef.current.isFinished = isFinished;
   syncRef.current.duration = duration;
 
-  // Accurate deterministic stats calculator
+  // Accurate deterministic Monkeytype-standard stats calculator
   const calculateMetrics = useCallback((
     wordsList: string[],
     history: string[],
@@ -72,78 +72,98 @@ export function useTypingEngine(initialDuration: TestDuration = 30) {
     currInput: string,
     startTime: number | null,
     dur: number,
-    remainingTime: number,
+    _remainingTime: number,
     active: boolean
   ) => {
-    let correct = 0;
-    let incorrect = 0;
+    let correctWordChars = 0;
+    let allCorrectChars = 0;
+    let incorrectChars = 0;
+    let extraChars = 0;
+    let totalTypedChars = 0;
 
-    // Past completed words
+    // Past completed words: only fully correct words count toward standard WPM
     for (let i = 0; i < currIndex; i++) {
       const target = wordsList[i] || '';
       const typed = history[i] || '';
-      const minLen = Math.min(target.length, typed.length);
+      const isWordCorrect = typed === target;
 
+      if (isWordCorrect) {
+        correctWordChars += target.length + 1; // Word characters + trailing space
+      }
+
+      const minLen = Math.min(target.length, typed.length);
       for (let c = 0; c < minLen; c++) {
         if (typed[c] === target[c]) {
-          correct++;
+          allCorrectChars++;
         } else {
-          incorrect++;
+          incorrectChars++;
         }
       }
 
       if (typed.length > target.length) {
-        incorrect += (typed.length - target.length); // extra characters
-      } else if (typed.length < target.length) {
-        incorrect += (target.length - typed.length); // missed characters
+        extraChars += typed.length - target.length;
       }
 
-      // Space credit for correctly typed word
-      if (typed === target) {
-        correct++;
-      }
-    }
-
-    // Current word
-    const currentTarget = wordsList[currIndex] || '';
-    const currentMinLen = Math.min(currentTarget.length, currInput.length);
-
-    for (let c = 0; c < currentMinLen; c++) {
-      if (currInput[c] === currentTarget[c]) {
-        correct++;
+      if (isWordCorrect) {
+        allCorrectChars++; // correct space keypress
       } else {
-        incorrect++;
+        extraChars++; // space on incorrect word
       }
+
+      totalTypedChars += typed.length + 1;
     }
 
-    if (currInput.length > currentTarget.length) {
-      incorrect += (currInput.length - currentTarget.length);
+    // Current word: count prefix if matching
+    const currentTarget = wordsList[currIndex] || '';
+    if (currInput.length > 0) {
+      if (currentTarget.startsWith(currInput)) {
+        correctWordChars += currInput.length;
+      }
+
+      const currentMinLen = Math.min(currentTarget.length, currInput.length);
+      for (let c = 0; c < currentMinLen; c++) {
+        if (currInput[c] === currentTarget[c]) {
+          allCorrectChars++;
+        } else {
+          incorrectChars++;
+        }
+      }
+
+      if (currInput.length > currentTarget.length) {
+        extraChars += currInput.length - currentTarget.length;
+      }
+
+      totalTypedChars += currInput.length;
     }
 
-    const totalTyped = correct + incorrect;
+    // Standard Monkeytype elapsed time:
+    // When active, use actual elapsed seconds; do not display burst spikes before 1s.
+    // When finished, use exact test duration.
+    let elapsedSeconds = 0;
+    if (active && startTime) {
+      elapsedSeconds = Math.max(0, (Date.now() - startTime) / 1000);
+    } else if (!active && startTime) {
+      elapsedSeconds = dur;
+    }
 
-    const elapsedSeconds = (startTime && active)
-      ? Math.max(0.5, (Date.now() - startTime) / 1000)
-      : Math.max(1, dur - remainingTime);
+    let calculatedWpm = 0;
+    let calculatedRawWpm = 0;
 
-    const elapsedMinutes = elapsedSeconds / 60;
+    if (elapsedSeconds >= 1) {
+      const elapsedMinutes = elapsedSeconds / 60;
+      calculatedWpm = Math.round((correctWordChars / 5) / elapsedMinutes);
+      calculatedRawWpm = Math.round((totalTypedChars / 5) / elapsedMinutes);
+    }
 
-    const calculatedWpm = elapsedMinutes > 0 && correct > 0
-      ? Math.round((correct / 5) / elapsedMinutes)
-      : 0;
-
-    const calculatedRawWpm = elapsedMinutes > 0 && totalTyped > 0
-      ? Math.round((totalTyped / 5) / elapsedMinutes)
-      : 0;
-
-    const calculatedAccuracy = totalTyped > 0
-      ? Math.min(100, Math.max(0, Math.round((correct / totalTyped) * 100)))
+    const totalKeypresses = allCorrectChars + incorrectChars + extraChars;
+    const calculatedAccuracy = totalKeypresses > 0
+      ? Math.min(100, Math.max(0, Math.round((allCorrectChars / totalKeypresses) * 100)))
       : 100;
 
     return {
-      correct,
-      incorrect,
-      totalTyped,
+      correct: allCorrectChars,
+      incorrect: incorrectChars + extraChars,
+      totalTyped: totalTypedChars,
       wpm: calculatedWpm,
       rawWpm: calculatedRawWpm,
       accuracy: calculatedAccuracy,
@@ -160,7 +180,7 @@ export function useTypingEngine(initialDuration: TestDuration = 30) {
       s.currentInput,
       s.startTime,
       s.duration,
-      timeLeft,
+      0,
       s.isActive
     );
 
@@ -170,7 +190,7 @@ export function useTypingEngine(initialDuration: TestDuration = 30) {
     setWpm(metrics.wpm);
     setRawWpm(metrics.rawWpm);
     setAccuracy(metrics.accuracy);
-  }, [calculateMetrics, timeLeft]);
+  }, [calculateMetrics]);
 
   // Pause and Resume functions
   const pauseTest = useCallback(() => {
