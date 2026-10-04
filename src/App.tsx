@@ -11,7 +11,7 @@ import { LevelUpModal } from './components/LevelUpModal';
 import { Sparkles } from 'lucide-react';
 
 export const App: React.FC = () => {
-  const { userData } = useTypixie();
+  const { userData, isFocusTyping } = useTypixie();
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
 
   // First time user onboarding
@@ -20,7 +20,7 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-fairy-bg text-fairy-text flex flex-col selection:bg-fairy-pink-light selection:text-fairy-text">
+    <div className="min-h-screen bg-fairy-bg text-fairy-text flex flex-col fairy-bg-pattern selection:bg-fairy-pink-light selection:text-fairy-text">
       {/* Top Navbar */}
       <Navbar currentTab={currentTab} onSelectTab={setCurrentTab} />
 
@@ -34,7 +34,9 @@ export const App: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="py-6 border-t border-fairy-pink-light/40 bg-white/60 text-center text-xs text-fairy-text-secondary">
+      <footer className={`py-6 border-t border-fairy-pink-light/40 bg-white/60 text-center text-xs text-fairy-text-secondary transition-opacity duration-300 ${
+        isFocusTyping ? 'opacity-20 pointer-events-none' : 'opacity-100'
+      }`}>
         <div className="max-w-6xl mx-auto px-4 flex items-center justify-center">
           <p className="text-xs text-fairy-text-secondary font-medium">
             © 2026 Trixette Rain Montalalna. All rights reserved.

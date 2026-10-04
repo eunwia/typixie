@@ -22,7 +22,7 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
-  const { userData, equippedFairy, currentLevel, levelDetails, averageAccuracy } = useTypixie();
+  const { userData, equippedFairy, currentLevel, levelDetails, averageAccuracy, isFocusTyping } = useTypixie();
   const [motivation, setMotivation] = useState(() => getRandomMotivation());
 
   const handleRefreshMotivation = () => {
@@ -33,7 +33,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 space-y-6 animate-fade-in">
       
       {/* Top Banner: Daily Motivation Whisper */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-fairy-pink-light/40 via-fairy-yellow-light/30 to-fairy-green-light/40 border border-fairy-pink-light/60 px-4 py-2.5 shadow-2xs flex items-center justify-between gap-3">
+      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-r from-fairy-pink-light/40 via-fairy-yellow-light/30 to-fairy-green-light/40 border border-fairy-pink-light/60 px-4 py-2.5 shadow-2xs flex items-center justify-between gap-3 transition-all duration-300 ${
+        isFocusTyping ? 'opacity-20 blur-[0.5px] pointer-events-none' : 'opacity-100'
+      }`}>
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-fairy-pink shadow-2xs flex-shrink-0">
             <Sparkles className="w-3.5 h-3.5" />
@@ -45,7 +47,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         <button
           onClick={handleRefreshMotivation}
           title="New whisper"
-          className="p-1.5 rounded-lg text-fairy-text-secondary hover:text-fairy-pink hover:bg-white/60 transition-all active:rotate-180 flex-shrink-0"
+          className="p-1.5 rounded-lg text-fairy-text-secondary hover:text-fairy-pink hover:bg-white/60 transition-all active:rotate-180 flex-shrink-0 cursor-pointer"
         >
           <RefreshCw className="w-3.5 h-3.5" />
         </button>
@@ -79,44 +81,59 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         </div>
 
         {/* Companion & Quick Access Sidebar (4 cols on large screen) */}
-        <div className="lg:col-span-4 xl:col-span-3 space-y-4">
+        <div className={`lg:col-span-4 xl:col-span-3 space-y-4 transition-all duration-300 ${
+          isFocusTyping ? 'opacity-20 blur-[0.5px] pointer-events-none' : 'opacity-100'
+        }`}>
           
-          {/* C. Fairy Companion Card */}
+          {/* C. Fairy Companion Card with Fairy Forest Background */}
           <div className="bg-white rounded-3xl p-5 shadow-card border border-fairy-pink-light/70 text-center relative overflow-hidden group">
+            {/* Fairy Forest Background Image */}
+            <div
+              className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-100 group-hover:opacity-55 transition-opacity duration-500 scale-105"
+              style={{ backgroundImage: `url('/background/fairy-forest.png')` }}
+              aria-hidden="true"
+            />
+            {/* Soft atmospheric gradient wash overlay for crisp readability */}
+            <div
+              className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/80 to-white/90 pointer-events-none"
+              aria-hidden="true"
+            />
             <div className="absolute top-0 right-0 w-28 h-28 bg-fairy-pink-light/30 rounded-bl-full pointer-events-none" />
             
-            <div className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-fairy-pink-light text-fairy-pink mb-2">
-              <Heart className="w-3 h-3 fill-fairy-pink" />
-              <span>Equipped Fairy</span>
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-fairy-pink-light text-fairy-pink mb-2 shadow-2xs">
+                <Heart className="w-3 h-3 fill-fairy-pink" />
+                <span>Equipped Fairy</span>
+              </div>
+
+              {/* Fairy Float Avatar */}
+              <div className="w-24 h-24 sm:w-28 sm:h-28 mx-auto my-2 animate-float relative">
+                <img
+                  src={equippedFairy.image}
+                  alt={equippedFairy.name}
+                  className="w-full h-full object-contain drop-shadow-sm"
+                />
+              </div>
+
+              <h3 className="font-black text-lg text-fairy-text drop-shadow-2xs">
+                {userData.userFairyName || 'Your Fairy'}
+              </h3>
+              <p className="text-xs font-bold text-fairy-pink">
+                {equippedFairy.name} • {equippedFairy.title}
+              </p>
+              
+              <p className="text-[11px] text-fairy-text-secondary italic mt-2 px-2 leading-relaxed">
+                "{equippedFairy.quote}"
+              </p>
+
+              <button
+                onClick={() => onNavigate('fairies')}
+                className="w-full mt-3 py-2 px-3 rounded-xl bg-fairy-bg-secondary/90 hover:bg-fairy-pink-light/60 text-fairy-text hover:text-fairy-pink text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-2xs backdrop-blur-2xs cursor-pointer"
+              >
+                <Heart className="w-3.5 h-3.5 text-fairy-pink" />
+                <span>Change Companion</span>
+              </button>
             </div>
-
-            {/* Fairy Float Avatar */}
-            <div className="w-24 h-24 sm:w-28 sm:h-28 mx-auto my-2 animate-float relative">
-              <img
-                src={equippedFairy.image}
-                alt={equippedFairy.name}
-                className="w-full h-full object-contain drop-shadow-sm"
-              />
-            </div>
-
-            <h3 className="font-black text-lg text-fairy-text">
-              {userData.userFairyName || 'Your Fairy'}
-            </h3>
-            <p className="text-xs font-bold text-fairy-pink">
-              {equippedFairy.name} • {equippedFairy.title}
-            </p>
-            
-            <p className="text-[11px] text-fairy-text-secondary italic mt-2 px-2 leading-relaxed">
-              "{equippedFairy.quote}"
-            </p>
-
-            <button
-              onClick={() => onNavigate('fairies')}
-              className="w-full mt-3 py-2 px-3 rounded-xl bg-fairy-bg-secondary hover:bg-fairy-pink-light/50 text-fairy-text hover:text-fairy-pink text-xs font-bold transition-all flex items-center justify-center gap-1.5"
-            >
-              <Heart className="w-3.5 h-3.5 text-fairy-pink" />
-              <span>Change Companion</span>
-            </button>
           </div>
 
           {/* E. Quick Access Links */}

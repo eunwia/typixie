@@ -11,7 +11,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab }) => {
-  const { userData, equippedFairy, currentLevel, levelDetails } = useTypixie();
+  const { userData, equippedFairy, currentLevel, levelDetails, isFocusTyping } = useTypixie();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks: { id: NavTab; label: string; icon: React.ReactNode }[] = [
@@ -28,7 +28,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab }) => {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-fairy-pink-light/60 shadow-xs transition-all">
+    <header className={`sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-fairy-pink-light/60 shadow-xs transition-all duration-300 ${
+      isFocusTyping ? 'opacity-20 blur-[0.5px] pointer-events-none' : 'opacity-100'
+    }`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-20">
           

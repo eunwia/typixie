@@ -14,7 +14,7 @@ export const TypingTestBox: React.FC<TypingTestBoxProps> = ({
   className = '',
   showCompanionBanner = true,
 }) => {
-  const { equippedFairy, userData, recordCompletedTest } = useTypixie();
+  const { equippedFairy, userData, recordCompletedTest, isFocusTyping, setIsFocusTyping } = useTypixie();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const wordsWrapperRef = useRef<HTMLDivElement>(null);
@@ -50,6 +50,7 @@ export const TypingTestBox: React.FC<TypingTestBoxProps> = ({
 
   const hasRecordedRef = useRef(false);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const focusIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Focus input handler
   const focusInput = useCallback(() => {
@@ -92,15 +93,14 @@ export const TypingTestBox: React.FC<TypingTestBoxProps> = ({
   }, [focusInput, state.isFinished, state.isActive, state.isPaused, togglePause]);
 
   // Handle caret positioning & smooth multi-line scrolling
-  useLayoutEffect(() => {
+  const updateCaret = useCallback(() => {
     if (state.isFinished || state.isPaused) {
       setCaretPos(prev => ({ ...prev, visible: false }));
       return;
     }
 
-    const container = containerRef.current;
     const wrapper = wordsWrapperRef.current;
-    if (!container || !wrapper) return;
+    if (!wrapper) return;
 
     const activeWordEl = wrapper.querySelector<HTMLElement>(`[data-word-idx="${state.currentWordIndex}"]`);
     if (!activeWordEl) return;
@@ -118,55 +118,62 @@ export const TypingTestBox: React.FC<TypingTestBoxProps> = ({
       setScrollOffsetY(0);
     }
 
-    // Compute pixel-exact caret position relative to containerRef
-    const containerRect = container.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
     const charElements = activeWordEl.querySelectorAll<HTMLElement>('[data-char-idx]');
     const extraCharElements = activeWordEl.querySelectorAll<HTMLElement>('[data-char-extra]');
     const typedLength = state.currentInput.length;
     const targetLength = charElements.length;
 
-    const cursorHeight = 28;
     let targetX = 0;
     let targetY = 0;
+    let targetHeight = 28;
 
     if (typedLength < targetLength && charElements[typedLength]) {
-      // Caret is at the left of the current active character
+      // Caret is directly on the current active character being typed
       const charRect = charElements[typedLength].getBoundingClientRect();
-      const charCenterY = (charRect.top + charRect.bottom) / 2;
-      targetX = charRect.left - containerRect.left;
-      targetY = (charCenterY - containerRect.top) - (cursorHeight / 2);
-    } else if (typedLength >= targetLength) {
-      // Caret is after the last typed or extra character
-      if (extraCharElements.length > 0) {
-        const lastExtraRect = extraCharElements[extraCharElements.length - 1].getBoundingClientRect();
-        const lastCenterY = (lastExtraRect.top + lastExtraRect.bottom) / 2;
-        targetX = lastExtraRect.right - containerRect.left;
-        targetY = (lastCenterY - containerRect.top) - (cursorHeight / 2);
-      } else if (charElements.length > 0) {
-        const lastCharRect = charElements[charElements.length - 1].getBoundingClientRect();
-        const lastCenterY = (lastCharRect.top + lastCharRect.bottom) / 2;
-        targetX = lastCharRect.right - containerRect.left;
-        targetY = (lastCenterY - containerRect.top) - (cursorHeight / 2);
-      } else {
-        const wordRect = activeWordEl.getBoundingClientRect();
-        const wordCenterY = (wordRect.top + wordRect.bottom) / 2;
-        targetX = wordRect.left - containerRect.left;
-        targetY = (wordCenterY - containerRect.top) - (cursorHeight / 2);
-      }
+      targetX = charRect.left - wrapperRect.left;
+      targetY = charRect.top - wrapperRect.top;
+      targetHeight = charRect.height;
+    } else if (extraCharElements.length > 0) {
+      // Caret is after the last extra character typed
+      const lastExtraRect = extraCharElements[extraCharElements.length - 1].getBoundingClientRect();
+      targetX = lastExtraRect.right - wrapperRect.left;
+      targetY = lastExtraRect.top - wrapperRect.top;
+      targetHeight = lastExtraRect.height;
+    } else if (charElements.length > 0) {
+      // Caret is after the last character of the word (ready for Space)
+      const lastCharRect = charElements[charElements.length - 1].getBoundingClientRect();
+      targetX = lastCharRect.right - wrapperRect.left;
+      targetY = lastCharRect.top - wrapperRect.top;
+      targetHeight = lastCharRect.height;
     } else {
       const wordRect = activeWordEl.getBoundingClientRect();
-      const wordCenterY = (wordRect.top + wordRect.bottom) / 2;
-      targetX = wordRect.left - containerRect.left;
-      targetY = (wordCenterY - containerRect.top) - (cursorHeight / 2);
+      targetX = wordRect.left - wrapperRect.left;
+      targetY = wordRect.top - wrapperRect.top;
+      targetHeight = wordRect.height;
     }
 
     setCaretPos({
       x: targetX,
       y: targetY,
-      height: cursorHeight,
+      height: targetHeight > 0 ? targetHeight : 28,
       visible: true,
     });
-  }, [state.currentWordIndex, state.currentInput, state.words, state.isFinished, state.isPaused, scrollOffsetY]);
+  }, [state.currentWordIndex, state.currentInput, state.isFinished, state.isPaused]);
+
+  useLayoutEffect(() => {
+    updateCaret();
+  }, [updateCaret]);
+
+  // Window resize & font ready listener
+  useEffect(() => {
+    const handleResize = () => updateCaret();
+    window.addEventListener('resize', handleResize);
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(() => updateCaret());
+    }
+    return () => window.removeEventListener('resize', handleResize);
+  }, [updateCaret]);
 
   // Key press wrapper to handle typing activity & blinking
   const onKeyDownCapture = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -186,8 +193,35 @@ export const TypingTestBox: React.FC<TypingTestBoxProps> = ({
       setIsTyping(false);
     }, 450);
 
+    // Focus Typing Mode: Activate when typing and reset idle timeout
+    if (!state.isPaused && !state.isFinished && (e.key.length === 1 || e.key === 'Backspace' || e.key === ' ')) {
+      setIsFocusTyping(true);
+      if (focusIdleTimerRef.current) {
+        clearTimeout(focusIdleTimerRef.current);
+      }
+      focusIdleTimerRef.current = setTimeout(() => {
+        setIsFocusTyping(false);
+      }, 2500);
+    }
+
     handleKeyDown(e);
   };
+
+  // Restore surrounding UI when paused or finished
+  useEffect(() => {
+    if (state.isPaused || state.isFinished) {
+      setIsFocusTyping(false);
+      if (focusIdleTimerRef.current) clearTimeout(focusIdleTimerRef.current);
+    }
+  }, [state.isPaused, state.isFinished, setIsFocusTyping]);
+
+  // Clean up focus typing mode on unmount
+  useEffect(() => {
+    return () => {
+      setIsFocusTyping(false);
+      if (focusIdleTimerRef.current) clearTimeout(focusIdleTimerRef.current);
+    };
+  }, [setIsFocusTyping]);
 
   // When test finishes, record rewards once
   useEffect(() => {
@@ -230,6 +264,8 @@ export const TypingTestBox: React.FC<TypingTestBoxProps> = ({
     hasRecordedRef.current = false;
     setTestResult(null);
     setScrollOffsetY(0);
+    setIsFocusTyping(false);
+    if (focusIdleTimerRef.current) clearTimeout(focusIdleTimerRef.current);
     resetTest(newDur);
     setTimeout(() => {
       focusInput();
@@ -282,7 +318,9 @@ export const TypingTestBox: React.FC<TypingTestBoxProps> = ({
       />
 
       {/* Top Controls: Companion info & Duration selection */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
+      <div className={`flex flex-col sm:flex-row items-center justify-between gap-3 mb-4 transition-all duration-300 ${
+        isFocusTyping ? 'opacity-20 blur-[0.5px] pointer-events-none' : 'opacity-100'
+      }`}>
         {/* Fairy Companion mini banner */}
         {showCompanionBanner ? (
           <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl bg-white/95 border border-fairy-pink-light/70 shadow-2xs">
@@ -465,23 +503,23 @@ export const TypingTestBox: React.FC<TypingTestBoxProps> = ({
           </div>
         )}
 
-        {/* Smooth Gliding Monkeytype-style Caret (Positioned relative to containerRef) */}
-        {caretPos.visible && !state.isPaused && (
-          <div
-            className={`fairy-smooth-caret ${!isTyping ? 'blinking' : ''}`}
-            style={{
-              transform: `translate3d(${caretPos.x}px, ${caretPos.y}px, 0)`,
-              height: `${caretPos.height}px`,
-            }}
-          />
-        )}
-
         {/* Scrollable Words Wrapper */}
         <div
           ref={wordsWrapperRef}
           className="relative transition-transform duration-200 ease-out will-change-transform"
           style={{ transform: `translate3d(0, -${scrollOffsetY}px, 0)` }}
         >
+          {/* Smooth Gliding Monkeytype-style Caret (Positioned relative to wordsWrapperRef) */}
+          {caretPos.visible && !state.isPaused && (
+            <div
+              className={`fairy-smooth-caret ${!isTyping ? 'blinking' : ''}`}
+              style={{
+                transform: `translate3d(${caretPos.x}px, ${caretPos.y}px, 0)`,
+                height: `${caretPos.height}px`,
+              }}
+            />
+          )}
+
           {/* Words Container */}
           <div className="flex flex-wrap gap-x-3.5 gap-y-3 font-mono text-xl sm:text-2xl md:text-[28px] leading-relaxed tracking-tight">
             {state.words.map((word, wordIdx) => {
@@ -512,8 +550,6 @@ export const TypingTestBox: React.FC<TypingTestBoxProps> = ({
                           // Incorrect character
                           charStyle = 'text-[#DC2626] bg-rose-100/90 rounded-xs font-bold';
                         }
-                      } else if (charIdx === typedLengthCurrentChar(typedWord.length, charIdx)) {
-                        charStyle = 'text-fairy-text font-bold';
                       }
                     } else if (isPast) {
                       if (charIdx < typedWord.length) {
@@ -532,7 +568,7 @@ export const TypingTestBox: React.FC<TypingTestBoxProps> = ({
                       <span
                         key={charIdx}
                         data-char-idx={charIdx}
-                        className={`transition-colors duration-75 ${charStyle}`}
+                        className={`inline-flex items-center leading-none transition-colors duration-75 ${charStyle}`}
                       >
                         {char}
                       </span>
@@ -545,7 +581,7 @@ export const TypingTestBox: React.FC<TypingTestBoxProps> = ({
                       <span
                         key={`extra-${extraIdx}`}
                         data-char-extra
-                        className="text-[#991B1B] bg-rose-200/90 rounded-xs font-bold"
+                        className="inline-flex items-center leading-none text-[#991B1B] bg-rose-200/90 rounded-xs font-bold"
                       >
                         {extraChar}
                       </span>
@@ -609,8 +645,3 @@ export const TypingTestBox: React.FC<TypingTestBoxProps> = ({
     </div>
   );
 };
-
-// Helper for active char
-function typedLengthCurrentChar(typedLen: number, charIdx: number): number {
-  return typedLen === charIdx ? charIdx : -1;
-}

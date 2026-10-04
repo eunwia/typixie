@@ -43,6 +43,8 @@ interface TypixieContextType {
     newLevel: number;
     unlockedFairies: Fairy[];
   };
+  isFocusTyping: boolean;
+  setIsFocusTyping: (focus: boolean) => void;
   equipFairy: (fairyId: string) => boolean;
   purchaseFairy: (fairyId: string) => { success: boolean; message: string };
   renameFairy: (name: string) => boolean;
@@ -54,6 +56,15 @@ const TypixieContext = createContext<TypixieContextType | undefined>(undefined);
 export const TypixieProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userData, setUserData] = useState<TypixieUserData>(() => loadUserData());
   const [levelUpCelebration, setLevelUpCelebration] = useState<LevelUpCelebrationData | null>(null);
+
+  // Focus Typing mode state
+  const [isFocusTyping, setIsFocusTyping] = useState<boolean>(false);
+
+  // Clean up any remaining dark mode settings from localStorage and DOM
+  useEffect(() => {
+    localStorage.removeItem('typixie_theme');
+    document.documentElement.classList.remove('dark');
+  }, []);
 
   // Sync to localStorage
   useEffect(() => {
@@ -243,6 +254,8 @@ export const TypixieProvider: React.FC<{ children: React.ReactNode }> = ({ child
         dismissLevelUpCelebration,
         completeOnboarding,
         recordCompletedTest,
+        isFocusTyping,
+        setIsFocusTyping,
         equipFairy,
         purchaseFairy,
         renameFairy,
