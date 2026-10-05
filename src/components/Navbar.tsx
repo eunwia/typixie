@@ -34,7 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab }) => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-20">
           
-          {/* Brand Logo with text-logo.png */}
+          {/* Brand Logo with text-logo.webp */}
           <button
             type="button"
             onClick={() => handleTabClick('home')}
@@ -42,9 +42,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab }) => {
             aria-label="Typixie Home"
           >
             <img
-              src="/text-logo.png"
+              src="/text-logo.webp"
               alt="Typixie"
               className="h-9 sm:h-11 md:h-12 w-auto object-contain drop-shadow-xs group-hover:opacity-90 transition-opacity"
+              decoding="async"
             />
           </button>
 

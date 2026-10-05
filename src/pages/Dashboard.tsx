@@ -90,7 +90,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             {/* Fairy Forest Background Image */}
             <div
               className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-100 group-hover:opacity-55 transition-opacity duration-500 scale-105"
-              style={{ backgroundImage: `url('/background/fairy-forest.png')` }}
+              style={{ backgroundImage: `url('/background/fairy-forest.webp')` }}
               aria-hidden="true"
             />
             {/* Soft atmospheric gradient wash overlay for crisp readability */}
@@ -149,9 +149,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center p-1 shadow-2xs">
                   <img
-                    src="/home-icons/my-fairies-icon.png"
+                    src="/home-icons/my-fairies-icon.webp"
                     alt="My Fairies"
                     className="w-full h-full object-contain"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div>
@@ -173,9 +175,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center p-1 shadow-2xs">
                   <img
-                    src="/home-icons/fairy-shop-icon.png"
+                    src="/home-icons/fairy-shop-icon.webp"
                     alt="Fairy Shop"
                     className="w-full h-full object-contain"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div>
@@ -197,9 +201,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center p-1 shadow-2xs">
                   <img
-                    src="/home-icons/profile-records-icon.png"
+                    src="/home-icons/profile-records-icon.webp"
                     alt="Profile & Records"
                     className="w-full h-full object-contain"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div>
@@ -254,9 +260,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         <div className="bg-white rounded-2xl p-4 sm:p-5 border border-fairy-pink-light/70 shadow-card flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-fairy-bg-secondary flex items-center justify-center p-1.5 flex-shrink-0">
             <img
-              src="/home-icons/completed-tests-icon.png"
+              src="/home-icons/completed-tests-icon.webp"
               alt="Completed Tests"
               className="w-full h-full object-contain"
+              loading="lazy"
+              decoding="async"
             />
           </div>
           <div>
@@ -273,9 +281,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         <div className="bg-white rounded-2xl p-4 sm:p-5 border border-fairy-pink-light/70 shadow-card flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-fairy-yellow-light/60 flex items-center justify-center p-1.5 flex-shrink-0">
             <img
-              src="/home-icons/words-typed-icon.png"
+              src="/home-icons/words-typed-icon.webp"
               alt="Words Typed"
               className="w-full h-full object-contain"
+              loading="lazy"
+              decoding="async"
             />
           </div>
           <div>

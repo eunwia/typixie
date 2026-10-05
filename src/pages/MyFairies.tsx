@@ -41,7 +41,7 @@ export const MyFairies: React.FC<MyFairiesProps> = ({ onNavigate }) => {
       {/* Background Sanctuary Layer with 15% opacity and soft cover positioning */}
       <div 
         className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-15 sm:opacity-20 transition-opacity duration-700"
-        style={{ backgroundImage: `url('/fairy-sanctuary.png')` }}
+        style={{ backgroundImage: `url('/fairy-sanctuary.webp')` }}
         aria-hidden="true"
       />
       {/* Soft gradient wash to guarantee maximum readability */}

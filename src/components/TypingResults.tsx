@@ -44,6 +44,7 @@ export const TypingResults: React.FC<TypingResultsProps> = ({
             src={equippedFairy.image}
             alt={equippedFairy.name}
             className="w-full h-full object-contain"
+            decoding="async"
           />
         </div>
         <div className="text-center sm:text-left">

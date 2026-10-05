@@ -27,7 +27,7 @@ export const Onboarding: React.FC = () => {
       {/* Background Fairy Sanctuary Layer with clearly visible moderate opacity */}
       <div 
         className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-35 sm:opacity-40 transition-opacity duration-700"
-        style={{ backgroundImage: `url('/fairy-sanctuary.png')` }}
+        style={{ backgroundImage: `url('/fairy-sanctuary.webp')` }}
         aria-hidden="true"
       />
       {/* Soft welcoming atmospheric wash overlay for guaranteed readability */}
@@ -47,9 +47,10 @@ export const Onboarding: React.FC = () => {
         {/* Typixie Logo */}
         <div className="inline-block relative mb-4">
           <img
-            src="/text-logo.png"
+            src="/text-logo.webp"
             alt="Typixie Logo"
             className="w-20 h-20 sm:w-24 sm:h-24 mx-auto object-contain drop-shadow-xs"
+            decoding="async"
           />
         </div>
 
@@ -70,9 +71,10 @@ export const Onboarding: React.FC = () => {
         <div className="relative my-6 p-6 rounded-2xl bg-gradient-to-b from-fairy-bg-secondary to-white border border-fairy-pink-light/60 max-w-xs mx-auto">
           <div className="w-40 h-40 mx-auto animate-float">
             <img
-              src="/fairies/your-fairy.png"
+              src="/fairies/your-fairy.webp"
               alt="Your Default Fairy"
               className="w-full h-full object-contain drop-shadow-sm"
+              decoding="async"
             />
           </div>
           <div className="mt-3 flex items-center justify-center gap-1.5 text-xs font-bold text-fairy-pink">

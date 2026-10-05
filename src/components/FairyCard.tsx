@@ -89,6 +89,7 @@ export const FairyCard: React.FC<FairyCardProps> = ({
               : 'grayscale brightness-90 contrast-75 opacity-60'
           }`}
           loading="lazy"
+          decoding="async"
         />
 
         {/* Lock Overlay on Image */}

@@ -212,9 +212,11 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigate }) => {
           <div className="bg-white p-5 rounded-2xl border border-fairy-pink-light/70 shadow-2xs text-center">
             <div className="w-10 h-10 mx-auto rounded-xl bg-fairy-pink-light/50 flex items-center justify-center p-1 mb-2">
               <img
-                src="/profile-icons/best-speed-icon.png"
+                src="/profile-icons/best-speed-icon.webp"
                 alt="Best Speed"
                 className="w-full h-full object-contain"
+                loading="lazy"
+                decoding="async"
               />
             </div>
             <p className="text-xs font-bold text-fairy-text-secondary uppercase">Best Speed</p>
@@ -226,9 +228,11 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigate }) => {
           <div className="bg-white p-5 rounded-2xl border border-fairy-pink-light/70 shadow-2xs text-center">
             <div className="w-10 h-10 mx-auto rounded-xl bg-fairy-green-light/50 flex items-center justify-center p-1 mb-2">
               <img
-                src="/profile-icons/avg-accuracy-icon.png"
+                src="/profile-icons/avg-accuracy-icon.webp"
                 alt="Avg Accuracy"
                 className="w-full h-full object-contain"
+                loading="lazy"
+                decoding="async"
               />
             </div>
             <p className="text-xs font-bold text-fairy-text-secondary uppercase">Avg Accuracy</p>
@@ -240,9 +244,11 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigate }) => {
           <div className="bg-white p-5 rounded-2xl border border-fairy-pink-light/70 shadow-2xs text-center">
             <div className="w-10 h-10 mx-auto rounded-xl bg-fairy-yellow-light/50 flex items-center justify-center p-1 mb-2">
               <img
-                src="/profile-icons/words-typed-icon.png"
+                src="/profile-icons/words-typed-icon.webp"
                 alt="Words Typed"
                 className="w-full h-full object-contain"
+                loading="lazy"
+                decoding="async"
               />
             </div>
             <p className="text-xs font-bold text-fairy-text-secondary uppercase">Words Typed</p>
@@ -254,9 +260,11 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigate }) => {
           <div className="bg-white p-5 rounded-2xl border border-fairy-pink-light/70 shadow-2xs text-center">
             <div className="w-10 h-10 mx-auto rounded-xl bg-fairy-bg-secondary flex items-center justify-center p-1 mb-2">
               <img
-                src="/profile-icons/tests-finished-icon.png"
+                src="/profile-icons/tests-finished-icon.webp"
                 alt="Tests Finished"
                 className="w-full h-full object-contain"
+                loading="lazy"
+                decoding="async"
               />
             </div>
             <p className="text-xs font-bold text-fairy-text-secondary uppercase">Tests Finished</p>

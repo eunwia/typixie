@@ -329,6 +329,7 @@ export const TypingTestBox: React.FC<TypingTestBoxProps> = ({
                 src={equippedFairy.image}
                 alt={equippedFairy.name}
                 className="w-full h-full object-contain"
+                decoding="async"
               />
             </div>
             <div className="text-left">
